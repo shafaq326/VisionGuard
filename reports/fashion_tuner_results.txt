@@ -1,0 +1,3 @@
+Best units: 256
+Best learning rate: 0.001
+Test accuracy: 0.8307

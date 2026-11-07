@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionGuard History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        a {
+            color: #3157c8;
+            text-decoration: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #eef1f8;
+        }
+
+        .empty {
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prediction History</h1>
+        <p><a href="/">← Back to Image Upload</a></p>
+
+        {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Filename</th>
+                    <th>Prediction</th>
+                    <th>Real Probability</th>
+                    <th>AI Probability</th>
+                    <th>Model Version</th>
+                    <th>Date and Time (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.filename }}</td>
+                    <td>{{ record.prediction }}</td>
+                    <td>{{ "%.2f"|format(record.real_probability * 100) }}%</td>
+                    <td>{{ "%.2f"|format(record.ai_probability * 100) }}%</td>
+                    <td>{{ record.model_version }}</td>
+                    <td>{{ record.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty">No predictions have been recorded yet.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionGuard | AI Image Detector</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #222;
+        }
+
+        nav {
+            background: #18264a;
+            padding: 18px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h2 {
+            color: white;
+            margin: 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 55px auto;
+            padding: 35px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+        }
+
+        h1 {
+            text-align: center;
+            color: #18264a;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            text-align: center;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #aab5d0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #fafbff;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+        }
+
+        button {
+            background: #3157c8;
+            color: white;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2445a8;
+        }
+
+        .error {
+            margin-top: 22px;
+            padding: 14px;
+            background: #ffe9e9;
+            color: #b42318;
+            border-radius: 7px;
+            text-align: center;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f1f4fc;
+            border-radius: 10px;
+        }
+
+        .result h2 {
+            text-align: center;
+            color: #18264a;
+        }
+
+        .prediction {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #dce1ed;
+        }
+
+        .caveat {
+            margin-top: 20px;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .model {
+            text-align: center;
+            margin-top: 18px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        footer {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 25px 15px;
+                padding: 22px;
+            }
+
+            nav {
+                padding: 16px;
+            }
+
+            nav h2 {
+                font-size: 19px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <h2>VisionGuard</h2>
+        <a href="/history">Prediction History</a>
+    </nav>
+
+    <div class="container">
+
+        <h1>AI Image Detector</h1>
+
+        <p class="description">
+            Upload an image to check whether it is AI-generated
+            or real using our trained deep learning model.
+        </p>
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="upload-box">
+                <h3>Upload Your Image</h3>
+
+                <p>Select a PNG, JPG, JPEG, or WEBP image.</p>
+
+                <input
+                    type="file"
+                    name="image"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    required
+                >
+
+                <button type="submit">Analyze Image</button>
+            </div>
+
+        </form>
+
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if result %}
+        <div class="result">
+
+            <h2>Analysis Result</h2>
+
+            <div class="prediction">
+                {{ result.prediction }}
+            </div>
+
+            <div class="metric">
+                <span>Real probability</span>
+                <strong>
+                    {{ "%.2f"|format(result.probability_real * 100) }}%
+                </strong>
+            </div>
+
+            <div class="metric">
+                <span>AI-generated probability</span>
+                <strong>
+                    {{ "%.2f"|format(result.probability_ai * 100) }}%
+                </strong>
+            </div>
+
+            <div class="metric">
+                <span>Model version</span>
+                <strong>{{ result.model_version }}</strong>
+            </div>
+
+            <p class="caveat">
+                <strong>Important:</strong>
+                This result is a model prediction, not proof of image
+                authenticity. Predictions may be incorrect, especially
+                when the model has limited confidence.
+            </p>
+
+        </div>
+        {% endif %}
+
+        <p class="model">
+            Powered by VisionGuardClassifier | Model Version {{ model_version }}
+        </p>
+
+    </div>
+
+    <footer>
+        VisionGuard | AI-Generated Image Detection
+    </footer>
+
+</body>
+</html>

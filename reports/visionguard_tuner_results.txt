@@ -1,0 +1,4 @@
+Best learning rate: 5e-05
+Best dropout: 0.4
+Best unfrozen layers: 20
+Best validation AUC: 0.8386
