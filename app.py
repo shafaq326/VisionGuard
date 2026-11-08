@@ -1,15 +1,18 @@
 import os
+import requests
 
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 
-from src.inference import predict_image, MODEL_VERSION
 from src.database import initialize_database, save_prediction, get_history
 
 app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
+
+MODEL_API_URL = os.getenv("MODEL_API_URL", "").rstrip("/")
+MODEL_VERSION = os.getenv("MODEL_VERSION", "2")
 
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 
@@ -21,6 +24,26 @@ def allowed_file(filename):
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
     )
+
+
+def predict_using_cloud_api(image_file, filename):
+    if not MODEL_API_URL:
+        raise RuntimeError("Cloud model API URL is not configured.")
+
+    response = requests.post(
+        f"{MODEL_API_URL}/predict",
+        files={
+            "file": (
+                filename,
+                image_file,
+                getattr(image_file, "mimetype", "application/octet-stream")
+            )
+        },
+        timeout=120
+    )
+
+    response.raise_for_status()
+    return response.json()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -45,14 +68,16 @@ def index():
                     error = "Invalid filename."
                 else:
                     try:
-                        result = predict_image(file.stream)
+                        result = predict_using_cloud_api(file.stream, filename)
                         save_prediction(filename, result)
-                    except Exception:
+
+                    except requests.exceptions.RequestException as e:
                         result = None
-                        error = (
-                            "Could not process this image. "
-                            "Please upload a valid PNG, JPG, or WEBP image."
-                        )
+                        error = f"Cloud API request failed: {str(e)}"
+
+                    except Exception as e:
+                        result = None
+                        error = f"Could not process image: {str(e)}"
 
     return render_template(
         "index.html",
@@ -70,11 +95,19 @@ def history():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return {
-        "status": "healthy",
-        "model": "VisionGuardClassifier",
-        "model_version": str(MODEL_VERSION)
-    }, 200
+    try:
+        response = requests.get(
+            f"{MODEL_API_URL}/health",
+            timeout=15
+        )
+        response.raise_for_status()
+        return response.json(), 200
+
+    except Exception as e:
+        return {
+            "status": "unavailable",
+            "error": str(e)
+        }, 503
 
 
 @app.errorhandler(413)
@@ -88,4 +121,4 @@ def file_too_large(error):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="127.0.0.1", port=5000, debug=False)

@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "instance/visionguard.db"))
+DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "/tmp/visionguard.db" if os.getenv("VERCEL") else "instance/visionguard.db"))
 
 
 def get_connection():
